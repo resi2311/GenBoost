@@ -8,7 +8,9 @@ class genboost:
         self.params = copy.copy(params)
         self.prob = pg.problem(self.problem)
         num_ind = self.params.pop('num_ind')
-        self.algo = pg.algorithm(pg.sga(**self.params))
+        #self.algo = pg.algorithm(pg.sga(**self.params))
+        self.algo = pg.algorithm(pg.pso(**self.params))
+        self.algo.set_verbosity(1)
         self.pop = pg.population(self.prob,num_ind)
         self.pop = self.algo.evolve(self.pop)
         return self.pop
