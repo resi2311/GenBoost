@@ -1,0 +1,6 @@
+[
+    {"num_ind": 10 ,"gen": 200,"variant":6, "omega": 1},
+    {"num_ind": 10 ,"gen": 400,"variant":6},
+    {"num_ind": 10 ,"gen": 200,"variant":6, "omega": 0.5},
+    {"num_ind": 10 ,"gen": 400,"variant":6, "omega": 1}
+]

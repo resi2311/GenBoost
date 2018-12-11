@@ -1,17 +1,18 @@
 import tensorflow as tf
 import numpy as np
 import json
-from mnistprob import mnist_net
-from genboost import genboost
 import time
-from ElephantSender import sendNotification
 import sys
+import pickle
+from problem import problem
+from genboost import genboost
+from test import test
+from ElephantSender import sendNotification
 
 mnist = tf.keras.datasets.mnist
 (x_train, y_train),(x_test, y_test) = mnist.load_data()
 x_train, x_test = x_train / 255.0, x_test / 255.0
-#x_test = x_test[:1000]
-#y_test = y_test[:1000]
+
 
 del mnist
 del x_train
@@ -39,41 +40,11 @@ def eval_model(weights):
         weight_layer_three,
         weight_layer_four
     ])
-    return np.array([-1.*model.evaluate(x_test, y_test,verbose=0 )[1]])
+    return np.array([-1.*model.evaluate(x_test, y_test, verbose=0 )[1]])
 
-with open('parameters_3.json') as json_data:
+with open('tests\pso_tests.json') as json_data:
     params = json.load(json_data)
 
-MyProb = mnist_net(fit_func=eval_model,dim=407050,lb=-1.,rb=1.)
+MyProb = problem(fit_func=eval_model,dim=407050,lb=-1.,rb=1.)
 gb = genboost(problem=MyProb)
-
-results = []
-times = []
-TotalTime_0 = time.time()
-
-for i, param in enumerate(params):
-    t0 = time.time()
-    print("Star of test #{}.".format(i+1))
-    pop = gb.run(param)
-    results.append(pop.champion_f)
-    print('Parameters: {}'.format(param))
-    print('Fitness: {}'.format(pop.champion_f))
-    t1 = time.time() - t0
-    times.append(t1)
-    print("Time for test:{}".format(t1 / 60))
-    print('-'*20)
-print("Total time for all tests:{}".format(time.time() - TotalTime_0))
-
-def_stdout = sys.stdout
-sys.stdout = open('log.txt','w')
-for i, (param, fitness, TestTime) in enumerate(zip(params,results,times)):
-    print("Test #{}".format(i+1))
-    print('Parameters: {}'.format(param))
-    print('Fitness: {}'.format(fitness))
-    print("Time for test:{}".format(TestTime / 60.))
-    print('-'*20)
-sys.stdout = def_stdout
-
-template = 'Test #{}\nParameters: {}\nFitness: {}\nTime: {}\n'
-for i, (param, fitness, TestTime) in enumerate(zip(params,results,times)):
-    sendNotification(template.format(i+1,param, fitness, TestTime/60.))
+results = test(gb, params, fname = 'pso_results.json')
