@@ -17,7 +17,7 @@ def test(gb, params_list : [dict], save_res = True, **kwargs):
         res_dct['champ_f'] = float(pop.champion_f[0])
         res_dct['time'] = t1
         results.append(res_dct)
-        print('\nParameters: {}\nFitness: {}\nTime for test: {:.3f}'.format(param,pop.champion_f[0],t1 / 60))
+        print('\nParameters: {}\nFitness: {}\nTime for test: {:.3f}'.format(param, pop.champion_f[0], t1 / 60))
         print('-'*20)
     print("Total time for all tests:{:.3f}".format(time.time() - TotalTime_0))
 

@@ -1,9 +1,12 @@
-import tensorflow as tf
-import numpy as np
 import json
 import time
 import sys
+import os
 import pickle
+
+import tensorflow as tf
+import numpy as np
+
 from problem import problem
 from genboost import genboost
 from test import test
@@ -12,7 +15,6 @@ from ElephantSender import sendNotification
 mnist = tf.keras.datasets.mnist
 (x_train, y_train),(x_test, y_test) = mnist.load_data()
 x_train, x_test = x_train / 255.0, x_test / 255.0
-
 
 del mnist
 del x_train
@@ -24,6 +26,7 @@ model = tf.keras.models.Sequential([
           tf.keras.layers.Dropout(0.2),
           tf.keras.layers.Dense(10, activation=tf.nn.softmax)
         ])
+
 model.compile(optimizer='adam',
             loss='sparse_categorical_crossentropy',
             metrics=['accuracy'])
@@ -42,9 +45,14 @@ def eval_model(weights):
     ])
     return np.array([-1.*model.evaluate(x_test, y_test, verbose=0 )[1]])
 
-with open('tests\pso_tests.json') as json_data:
+tests_path = "tests"
+results_path = "results"
+test_file = "bc_tests.json"
+results_file = "bc_results.json"
+
+with open(os.path.join(tests_path, test_file)) as json_data:
     params = json.load(json_data)
 
-MyProb = problem(fit_func=eval_model,dim=407050,lb=-1.,rb=1.)
+MyProb = problem(fit_func=eval_model, dim=407050, lb=-1., rb=1.)
 gb = genboost(problem=MyProb)
-results = test(gb, params, fname = 'pso_results.json')
+results = test(gb, params, fname = os.path.join(results_path, results_file))

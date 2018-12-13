@@ -1,7 +1,7 @@
 import pygmo as pg
 import copy
 class genboost:
-    def __init__(self,problem):
+    def __init__(self, problem):
         self.problem = problem
         
     def run(self, params : dict):

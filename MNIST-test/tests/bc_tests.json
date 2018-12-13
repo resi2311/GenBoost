@@ -1,0 +1,23 @@
+[
+    {
+        "gen": 100,
+        "ind_num": 50,
+        "limit": 1,
+        "seed": 5679,
+        "algo": "bee_colony"
+    },
+    {
+        "gen": 100,
+        "ind_num": 50,
+        "limit": 2,
+        "seed": 5679,
+        "algo": "bee_colony"
+    },
+    {
+        "gen": 100,
+        "ind_num": 50,
+        "limit": 3,
+        "seed": 5679,
+        "algo": "bee_colony"
+    }
+]
