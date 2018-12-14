@@ -27,6 +27,6 @@ def test(gb, params_list : [dict], save_res = True, **kwargs):
         else:
             fname = 'test_results.json'
         with open(fname,'w', encoding="utf-8", newline='\r\n') as json_data:
-            json.dump(results, json_data)
+            json.dump(results, json_data, indent = 4)
 
     return results
