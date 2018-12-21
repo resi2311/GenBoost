@@ -1,0 +1,1 @@
+[{"gen": 100, "ind_num": 50, "limit": 1, "seed": 5679, "algo": "bee_colony", "champ_f": -0.1737, "time": 3283.4279096126556}, {"gen": 100, "ind_num": 50, "limit": 2, "seed": 5679, "algo": "bee_colony", "champ_f": -0.1856, "time": 3277.7850522994995}, {"gen": 100, "ind_num": 50, "limit": 3, "seed": 5679, "algo": "bee_colony", "champ_f": -0.1939, "time": 3275.9670763015747}]
