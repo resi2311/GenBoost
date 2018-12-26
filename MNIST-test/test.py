@@ -11,6 +11,7 @@ def test(gb, params_list : [dict], save_res = True, **kwargs):
     for i, param in enumerate(params_list):
         t0 = time.time()
         print("Star of test #{}.".format(i+1))
+        print('Parameters: {}'.format(param))
         pop = gb.run(param)
 
         #temporary
