@@ -1,6 +1,6 @@
 import pygmo as pg
 import copy
-class genboost:
+class GenBoost:
     def __init__(self, problem):
         self.problem = problem
         

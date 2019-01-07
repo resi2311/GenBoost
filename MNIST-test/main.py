@@ -7,8 +7,8 @@ import pickle
 import tensorflow as tf
 import numpy as np
 
-from problem import problem
-from genboost import genboost
+from problem import Problem
+from genboost import GenBoost
 from test import test
 from ElephantSender import sendNotification
 
@@ -47,12 +47,12 @@ def eval_model(weights):
 
 tests_path = "tests"
 results_path = "results"
-test_file = "pso_tests.json"
-results_file = "pso_results_180_240.json"
+test_file = "temp.json"
+results_file = "sga_results.json"
 
 with open(os.path.join(tests_path, test_file)) as json_data:
-    params = json.load(json_data)[180:]
+    params = json.load(json_data)
 
-MyProb = problem(fit_func=eval_model, dim=407050, lb=-1., rb=1.)
-gb = genboost(problem=MyProb)
+my_prob = Problem(fit_func=eval_model, dim=407050, lb=-1., rb=1.)
+gb = GenBoost(problem=my_prob)
 results = test(gb, params, fname = os.path.join(results_path, results_file))
