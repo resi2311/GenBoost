@@ -7,10 +7,9 @@ import pickle
 import tensorflow as tf
 import numpy as np
 
-from problem import Problem
-from genboost import GenBoost
-from test import test
-from ElephantSender import sendNotification
+import problem
+import genboost
+import test
 
 mnist = tf.keras.datasets.mnist
 (x_train, y_train),(x_test, y_test) = mnist.load_data()
@@ -53,6 +52,6 @@ results_file = "sga_results.json"
 with open(os.path.join(tests_path, test_file)) as json_data:
     params = json.load(json_data)
 
-my_prob = Problem(fit_func=eval_model, dim=407050, lb=-1., rb=1.)
-gb = GenBoost(problem=my_prob)
-results = test(gb, params, fname = os.path.join(results_path, results_file))
+my_prob = problem.Problem(fit_func=eval_model, dim=407050, lb=-1., rb=1.)
+gb = genboost.GenBoost(problem=my_prob)
+results = test.test(gb, params, fname = os.path.join(results_path, results_file))
