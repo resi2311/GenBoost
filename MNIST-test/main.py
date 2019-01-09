@@ -42,16 +42,17 @@ def eval_model(weights):
         weight_layer_three,
         weight_layer_four
     ])
-    return np.array([-1.*model.evaluate(x_test, y_test, verbose=0 )[1]])
+    return np.array([-1.*model.evaluate(x_test, y_test, verbose=0)[1]])
 
-tests_path = "tests"
-results_path = "results"
-test_file = "temp.json"
-results_file = "sga_results.json"
+if __name__ == "__main__":
+    tests_path = "tests"
+    results_path = "results"
+    test_file = "temp.json"
+    results_file = "sga_results.json"
 
-with open(os.path.join(tests_path, test_file)) as json_data:
-    params = json.load(json_data)
+    with open(os.path.join(tests_path, test_file)) as json_data:
+        params = json.load(json_data)
 
-my_prob = problem.Problem(fit_func=eval_model, dim=407050, lb=-1., rb=1.)
-gb = genboost.GenBoost(problem=my_prob)
-results = test.test(gb, params, fname = os.path.join(results_path, results_file))
+    my_prob = problem.Problem(fit_func=eval_model, dim=407050, lb=-1., rb=1.)
+    gb = genboost.GenBoost(problem=my_prob)
+    results = test.test(gb, params, fname = os.path.join(results_path, results_file))
