@@ -1,10 +1,11 @@
 import numpy as np
 import json
-from mnistprob import mnist_net
-from genboost import genboost
+from Scripts.problem import Problem
+from Scripts.genboost import GenBoost
 import time
-from ElephantSender import sendNotification
+#from ElephantSender import sendNotification
 import sys
+import copy
 
 from keras.preprocessing import sequence
 from keras.models import Sequential
@@ -22,7 +23,7 @@ maxlen = 80
 
 # Загружаем данные
 (X_train, y_train), (X_test, y_test) = imdb.load_data(num_words=max_features)
-
+import pdb; pdb.set_trace()
 # Заполняем или обрезаем рецензии
 X_train = sequence.pad_sequences(X_train, maxlen=maxlen)
 X_test = sequence.pad_sequences(X_test, maxlen=maxlen)
@@ -62,42 +63,49 @@ def eval_model(weights):
         weight_layer_five,
         weight_layer_six
     ])
-    
+    print('eval')
     return np.array([-1.*model.evaluate(X_test, y_test,verbose=0 )[1]])
 
-with open('parameters_3.json') as json_data:
+with open('pso_best.json') as json_data:
     params = json.load(json_data)
 
-MyProb = mnist_net(fit_func=eval_model,dim=213200 + 100 * 1 + 1,lb=-1.,rb=1.)
-gb = genboost(problem=MyProb)
+MyProb = Problem(fit_func=eval_model,dim=213200 + 100 * 1 + 1,lb=-1.,rb=1.)
+gb = GenBoost(problem=MyProb)
 
-results = []
-times = []
-TotalTime_0 = time.time()
+pop = gb.run(params)
+result = copy.copy(params)
+result['champion_f'] = pop.champion_f
+with open('result0.json','w', encoding="utf-8", newline='\r\n') as json_data:
+    json.dump(result, json_data, indent = 4)
 
-for i, param in enumerate(params):
-    t0 = time.time()
-    print("Star of test #{}.".format(i+1))
-    pop = gb.run(param)
-    results.append(pop.champion_f)
-    print('Parameters: {}'.format(param))
-    print('Fitness: {}'.format(pop.champion_f))
-    t1 = time.time() - t0
-    times.append(t1)
-    print("Time for test:{}".format(t1 / 60))
-    print('-'*20)
-print("Total time for all tests:{}".format(time.time() - TotalTime_0))
 
-def_stdout = sys.stdout
-sys.stdout = open('log.txt','w')
-for i, (param, fitness, TestTime) in enumerate(zip(params,results,times)):
-    print("Test #{}".format(i+1))
-    print('Parameters: {}'.format(param))
-    print('Fitness: {}'.format(fitness))
-    print("Time for test:{}".format(TestTime / 60.))
-    print('-'*20)
-sys.stdout = def_stdout
+# results = []
+# times = []
+# TotalTime_0 = time.time()
 
-template = 'Test #{}\nParameters: {}\nFitness: {}\nTime: {}\n'
-for i, (param, fitness, TestTime) in enumerate(zip(params,results,times)):
-    sendNotification(template.format(i+1,param, fitness, TestTime/60.))
+# for i, param in enumerate(params):
+#     t0 = time.time()
+#     print("Star of test #{}.".format(i+1))
+#     pop = gb.run(param)
+#     results.append(pop.champion_f)
+#     print('Parameters: {}'.format(param))
+#     print('Fitness: {}'.format(pop.champion_f))
+#     t1 = time.time() - t0
+#     times.append(t1)
+#     print("Time for test:{}".format(t1 / 60))
+#     print('-'*20)
+# print("Total time for all tests:{}".format(time.time() - TotalTime_0))
+
+# def_stdout = sys.stdout
+# sys.stdout = open('log.txt','w')
+# for i, (param, fitness, TestTime) in enumerate(zip(params,results,times)):
+#     print("Test #{}".format(i+1))
+#     print('Parameters: {}'.format(param))
+#     print('Fitness: {}'.format(fitness))
+#     print("Time for test:{}".format(TestTime / 60.))
+#     print('-'*20)
+# sys.stdout = def_stdout
+
+# template = 'Test #{}\nParameters: {}\nFitness: {}\nTime: {}\n'
+# for i, (param, fitness, TestTime) in enumerate(zip(params,results,times)):
+#     sendNotification(template.format(i+1,param, fitness, TestTime/60.))
