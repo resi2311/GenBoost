@@ -23,13 +23,16 @@ maxlen = 80
 
 # Загружаем данные
 (X_train, y_train), (X_test, y_test) = imdb.load_data(num_words=max_features)
-import pdb; pdb.set_trace()
+
 # Заполняем или обрезаем рецензии
 X_train = sequence.pad_sequences(X_train, maxlen=maxlen)
 X_test = sequence.pad_sequences(X_test, maxlen=maxlen)
 
 del X_train
 del y_train
+
+X_test = X_test[:10000]
+y_test = y_test[:10000]
 
 # Создаем сеть
 model = Sequential()
