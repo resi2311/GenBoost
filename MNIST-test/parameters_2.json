@@ -1,3 +1,0 @@
-[
-    {"num_ind": 10 ,"gen": 100, "selection": "truncated", "crossover": "exponential", "mutation": "polynomial"}
-]

@@ -1,18 +1,21 @@
-from __future__ import print_function
+import numpy as np
+import json
+import copy
+import pickle
+
 import keras
 from keras.datasets import mnist
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Flatten
 from keras.layers import Conv2D, MaxPooling2D
 from keras import backend as K
-from Scripts.problem import Problem
-from Scripts.genboost import GenBoost
-import numpy as np
-import json
-import time
-import copy
-#from ElephantSender import sendNotification
-import sys
+
+from scripts.problem import Problem
+from scripts.genboost import GenBoost
+
+GB_PARAMS = 'pso_best.json'
+WEIGHTS_SAVE = 'best_weights_cnn.bin'
+RESULT_SAVE = 'result_cnn.json'
 
 batch_size = 128
 num_classes = 10
@@ -59,18 +62,14 @@ model.compile(optimizer='adam',
             metrics=['accuracy'])
 
 def eval_model(weights):
-    # Rewrite this - 609,354
     weight_layer_one = np.array(weights[:3*3*1*32]).reshape(3,3,1,32)
-    # 3*3*1*32 = 288
     weight_layer_two = np.array(weights[288:288 + 32]).reshape(32,)
     weight_layer_three = np.array(weights[320:320 + 3*3*32*64]).reshape(3,3,32,64)
-    #320 + 3*3*32*64 = 18752
     weight_layer_four = np.array(weights[18752:18752 + 64]).reshape(64,)
     weight_layer_five = np.array(weights[18816:18816+9216*64]).reshape(9216,64)
     weight_layer_six = np.array(weights[608640:608640 + 64]).reshape(64,)
     weight_layer_seven = np.array(weights[608704:608704+64*10]).reshape(64,10)
     weight_layer_eight = np.array(weights[-10:]).reshape(10,)
-    
     
     model.set_weights([
         weight_layer_one,
@@ -84,46 +83,15 @@ def eval_model(weights):
     ])
     return np.array([-1.*model.evaluate(x_test, y_test,verbose=0 )[1]])
 
-with open('pso_best.json') as json_data:
+with open(GB_PARAMS) as json_data:
     params = json.load(json_data)
 
-MyProb = Problem(fit_func=eval_model,dim=609354,lb=-1.,rb=1.)
-gb = GenBoost(problem=MyProb)
+my_prob = Problem(fit_func=eval_model, dim=609354, lb=-1., rb=1.)
+gb = GenBoost(problem=my_prob)
 
 pop = gb.run(params)
 result = copy.copy(params)
-result['champion_f'] = pop.champion_f
-with open('result0.json','w', encoding="utf-8", newline='\r\n') as json_data:
+result['champion_f'] = pop.champion_f[0]
+with open(RESULT_SAVE,'w', encoding="utf-8", newline='\r\n') as json_data:
     json.dump(result, json_data, indent = 4)
-
-
-# results = []
-# times = []
-# TotalTime_0 = time.time()
-
-# for i, param in enumerate(params):
-#     t0 = time.time()
-#     print("Star of test #{}.".format(i+1))
-#     pop = gb.run(param)
-#     results.append(pop.champion_f)
-#     print('Parameters: {}'.format(param))
-#     print('Fitness: {}'.format(pop.champion_f))
-#     t1 = time.time() - t0
-#     times.append(t1)
-#     print("Time for test:{}".format(t1 / 60))
-#     print('-'*20)
-# print("Total time for all tests:{}".format(time.time() - TotalTime_0))
-
-# def_stdout = sys.stdout
-# sys.stdout = open('log.txt','w')
-# for i, (param, fitness, TestTime) in enumerate(zip(params,results,times)):
-#     print("Test #{}".format(i+1))
-#     print('Parameters: {}'.format(param))
-#     print('Fitness: {}'.format(fitness))
-#     print("Time for test:{}".format(TestTime / 60.))
-#     print('-'*20)
-# sys.stdout = def_stdout
-
-# template = 'Test #{}\nParameters: {}\nFitness: {}\nTime: {}\n'
-# for i, (param, fitness, TestTime) in enumerate(zip(params,results,times)):
-#     sendNotification(template.format(i+1,param, fitness, TestTime/60.))
+pickle.dump(pop.champion_x, open(WEIGHTS_SAVE,'wb'))

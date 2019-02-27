@@ -1,11 +1,7 @@
 import numpy as np
 import json
-from Scripts.problem import Problem
-from Scripts.genboost import GenBoost
-import time
-#from ElephantSender import sendNotification
-import sys
 import copy
+import pickle
 
 from keras.preprocessing import sequence
 from keras.models import Sequential
@@ -13,6 +9,12 @@ from keras.layers import Dense, Activation, Embedding
 from keras.layers import LSTM, SpatialDropout1D
 from keras.datasets import imdb
 
+from scripts.problem import Problem
+from scripts.genboost import GenBoost
+
+GB_PARAMS = 'pso_best.json'
+WEIGHTS_SAVE = 'best_weights_rnn.bin'
+RESULT_SAVE = 'result_cnn.json'
 
 # Устанавливаем seed для повторяемости результатов
 np.random.seed(42)
@@ -22,6 +24,7 @@ max_features = 5000
 maxlen = 80
 
 # Загружаем данные
+datalen = 10000
 (X_train, y_train), (X_test, y_test) = imdb.load_data(num_words=max_features)
 
 # Заполняем или обрезаем рецензии
@@ -31,8 +34,8 @@ X_test = sequence.pad_sequences(X_test, maxlen=maxlen)
 del X_train
 del y_train
 
-X_test = X_test[:10000]
-y_test = y_test[:10000]
+X_test = X_test[:datalen]
+y_test = y_test[:datalen]
 
 # Создаем сеть
 model = Sequential()
@@ -47,14 +50,12 @@ model.add(Dense(1, activation="sigmoid"))
 model.compile(optimizer='adam',
             loss='binary_crossentropy',
             metrics=['accuracy'])
-
+# Функция приспособленности
 def eval_model(weights):
-    weight_layer_one = np.array(weights[:5000*32]).reshape(5000,32) # weights[:784*512]).reshape(784,512)
+    weight_layer_one = np.array(weights[:5000*32]).reshape(5000,32) 
     weight_layer_two = np.array(weights[5000*32:(5000*32 +32*400)]).reshape(32,400)
-    # 5000*32 +32*400 = 172800
     weight_layer_three = np.array(weights[172800:172800+100*400]).reshape(100,400)
     weight_layer_four = np.array(weights[172800+100*400:172800+101*400]).reshape(400,)
-    # 172800+101*400 = 213200
     weight_layer_five = np.array(weights[213200:213200 + 100 * 1]).reshape(100,1)
     weight_layer_six = np.array(weights[-1]).reshape(1,)
     
@@ -66,49 +67,22 @@ def eval_model(weights):
         weight_layer_five,
         weight_layer_six
     ])
-    print('eval')
-    return np.array([-1.*model.evaluate(X_test, y_test,verbose=0 )[1]])
+    
+    return np.array([-1.*model.evaluate(X_test, y_test, verbose=0 )[1]])
 
-with open('pso_best.json') as json_data:
+# Загрузка параметров для GenBoost
+with open(GB_PARAMS) as json_data:
     params = json.load(json_data)
 
-MyProb = Problem(fit_func=eval_model,dim=213200 + 100 * 1 + 1,lb=-1.,rb=1.)
-gb = GenBoost(problem=MyProb)
+# Инициализация проблемы оптимизации
+my_prob = Problem(fit_func=eval_model, dim=213200 + 100 * 1 + 1, lb=-1., rb=1.)
+# Инициализация класса GenBoost
+gb = GenBoost(problem=my_prob)
 
 pop = gb.run(params)
 result = copy.copy(params)
-result['champion_f'] = pop.champion_f
-with open('result0.json','w', encoding="utf-8", newline='\r\n') as json_data:
+result['champion_f'] = pop.champion_f[0]
+with open(RESULT_SAVE,'w', encoding="utf-8", newline='\r\n') as json_data:
     json.dump(result, json_data, indent = 4)
+pickle.dump(pop.champion_x, open(WEIGHTS_SAVE,'wb'))
 
-
-# results = []
-# times = []
-# TotalTime_0 = time.time()
-
-# for i, param in enumerate(params):
-#     t0 = time.time()
-#     print("Star of test #{}.".format(i+1))
-#     pop = gb.run(param)
-#     results.append(pop.champion_f)
-#     print('Parameters: {}'.format(param))
-#     print('Fitness: {}'.format(pop.champion_f))
-#     t1 = time.time() - t0
-#     times.append(t1)
-#     print("Time for test:{}".format(t1 / 60))
-#     print('-'*20)
-# print("Total time for all tests:{}".format(time.time() - TotalTime_0))
-
-# def_stdout = sys.stdout
-# sys.stdout = open('log.txt','w')
-# for i, (param, fitness, TestTime) in enumerate(zip(params,results,times)):
-#     print("Test #{}".format(i+1))
-#     print('Parameters: {}'.format(param))
-#     print('Fitness: {}'.format(fitness))
-#     print("Time for test:{}".format(TestTime / 60.))
-#     print('-'*20)
-# sys.stdout = def_stdout
-
-# template = 'Test #{}\nParameters: {}\nFitness: {}\nTime: {}\n'
-# for i, (param, fitness, TestTime) in enumerate(zip(params,results,times)):
-#     sendNotification(template.format(i+1,param, fitness, TestTime/60.))
