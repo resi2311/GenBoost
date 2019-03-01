@@ -13,7 +13,7 @@ from keras import backend as K
 from scripts.problem import Problem
 from scripts.genboost import GenBoost
 
-GB_PARAMS = 'pso_best.json'
+GB_PARAMS = 'config.json'
 WEIGHTS_SAVE = 'best_weights_cnn.bin'
 RESULT_SAVE = 'result_cnn.json'
 
